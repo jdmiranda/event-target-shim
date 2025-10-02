@@ -126,11 +126,13 @@ export function isRemoved(listener: Listener): boolean {
  * @param attribute `true` if this callback is an event attribute handler.
  */
 export function invokeCallback(
-    { callback }: Listener,
+    listener: Listener,
     target: EventTarget<any, any>,
     event: Event<any>,
 ): void {
     try {
+        const { callback } = listener
+        // Fast path: most callbacks are functions
         if (typeof callback === "function") {
             callback.call(target, event)
         } else if (typeof callback.handleEvent === "function") {

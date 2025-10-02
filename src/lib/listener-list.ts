@@ -35,11 +35,11 @@ export function findIndexOfListener(
     callback: Listener.Callback<any, any>,
     capture: boolean,
 ): number {
-    for (let i = 0; i < listeners.length; ++i) {
-        if (
-            listeners[i].callback === callback &&
-            isCapture(listeners[i]) === capture
-        ) {
+    // Cache length for performance
+    const length = listeners.length
+    for (let i = 0; i < length; ++i) {
+        const listener = listeners[i]
+        if (listener.callback === callback && isCapture(listener) === capture) {
             return i
         }
     }
@@ -81,7 +81,8 @@ export function addListener(
 
     if (list.cow) {
         list.cow = false
-        list.listeners = [...list.listeners, listener]
+        // Optimize: use concat for single element (faster than spread)
+        list.listeners = list.listeners.concat(listener)
     } else {
         list.listeners.push(listener)
     }

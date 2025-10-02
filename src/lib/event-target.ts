@@ -220,7 +220,14 @@ export class EventTarget<
             | EventTarget.FallbackEvent<TMode>,
     ): boolean {
         const list = $(this)[String(e.type)]
+        // Fast path: no listeners registered for this event type
         if (list == null) {
+            return true
+        }
+
+        // Fast path: empty listener list
+        const { listeners } = list
+        if (listeners.length === 0) {
             return true
         }
 
@@ -234,13 +241,16 @@ export class EventTarget<
         eventData.target = eventData.currentTarget = this
 
         if (!eventData.stopPropagationFlag) {
-            const { cow, listeners } = list
+            const { cow } = list
 
             // Set copy-on-write flag.
             list.cow = true
 
+            // Cache length for performance
+            const length = listeners.length
+
             // Call listeners.
-            for (let i = 0; i < listeners.length; ++i) {
+            for (let i = 0; i < length; ++i) {
                 const listener = listeners[i]
 
                 // Skip if removed.
